@@ -1,4 +1,9 @@
+# R shit
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+
+# any errant images
+images
+*.png
