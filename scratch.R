@@ -1,58 +1,40 @@
 library(plotly)
 library(plyr)
 library(readr)
+library(tidyr)
+library(ggplot2)
+library(ggthemes)
 
-#print(ToothGrowth)
+#total # of items collected per beach cleanup 
+#total # of items per volunteer per beach cleanup location
+#items per volunteer per beach cleanup 
+#total volunteers per beach cleanup location 
+#specific item total averages per beach for top items of concern - butts, foam, etc. 
 
 dataFile <- "./data/beachcleanup.csv"
 
 #beachdata = read.csv("data/beachcleanup.csv")  # read csv file 
-beachData <- read_csv(dataFile)
+beachData <- read_csv(dataFile, col_names = TRUE, na = "")
+beachData[is.na(beachData)]<-0
 
-head(beachData)
+itemColNames <- c("PlasticBags", "PlasticBottles", "BottleCaps", "PlasticUtensils", "PlasticFoodService", "Straws", 
+                   "PlasticFoodWrappers", "SixPacks", "Styrofoam", "Balloons", "FishingBoating", 
+                   "GlowSticks", "Syringes", "MiscPlatics", "Cigarettes", "Metals", "Glass", "Paper", 
+                   "Fabrics", "Wood", "Animals")
 
-x <- list(
-  title = "Dates"
-)
-y <- list(
-  title = "Total Items"
-)
+beachDataL <- gather(beachData, key = "Type", value = "Items" , itemColNames)
 
-p <- plot_ly(
-  x = as.Date(beachData$Date, "%m/%d/%y"),
-  y = beachData$TotalItems,
-  name = "Beach Cleanup",
-  type = "bar",
-  transforms = list(
-    list(
-      type = 'groupby',
-      groups = beachData$Location))
-) %>%
-layout(xaxis = x, yaxis = y)
+p <- ggplot(beachDataL, aes(fill=beachDataL$Type, y=beachDataL$Items, x=beachDataL$Date)) + 
+  geom_bar(position="stack", stat="identity") +
+  ggtitle("Beach Cleanup Results") +
+  labs(fill = "", y = "Ttl Trash Collected") +
+  theme_fivethirtyeight() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
 
+p <- ggplotly(p)
 print(p)
 
 
-#data_mean <- ddply(ToothGrowth, c("supp", "dose"), summarise, length = mean(len))
-#data_sd <- ddply(ToothGrowth, c("supp", "dose"), summarise, length = sd(len))
-#data <- data.frame(data_mean, data_sd$length)
-#data <- rename(data, c("data_sd.length" = "sd"))
-#data$dose <- as.factor(data$dose)
-
-#data_mean <- ddply(beachData, c("TotalItems", "Date"), summarise, length = mean(len))
-#data_sd <- ddply(beachData, c("TotalItems", "Date"), summarise, length = sd(len))
-#data <- data.frame(data_mean, data_sd$length)
-#data <- rename(data, c("data_sd.length" = "sd"))
-#data$dose <- as.factor(data$Date)
-#p <- plot_ly(data = data[which(data$TotalItems == 'OJ'),], x = ~dose, y = ~length, type = 'bar', name = 'OJ',
-#             error_y = ~list(array = sd,
-#                             color = '#000000')) %>%
-# add_trace(data = data[which(data$supp == 'VC'),], name = 'VC')
-
-#print(p)
-#orca(p, "./scratchplot.png")
-
-# Create a shareable link to your chart
-# Set up API credentials: https://plot.ly/r/getting-started
-#chart_link = api_create(p, filename="error-bar")
 #chart_link
